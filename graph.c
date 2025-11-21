@@ -18,6 +18,21 @@ graph_t * create_new_graph(char *topology_name)
     return new_graph;
 } 
 
+interface_t * get_int_with_intf_name(node_t * node, char *intf_name)
+{
+    int i = 0;
+
+    while(node->intf[i] != NULL)
+    {
+        if((strcmp(node->intf[i]->if_name, intf_name)) == 0)
+        {
+            return node->intf[i];
+        } 
+    }
+
+    return NULL;
+}
+
 node_t * create_graph_node(graph_t *topo, char * node_name)
 {
     node_t *new_node;
@@ -125,3 +140,4 @@ get_nbr_node(interface_t *interface){
     else
         return link->intf1.att_node;
 }
+

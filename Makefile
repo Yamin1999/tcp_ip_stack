@@ -1,25 +1,43 @@
-CC=gcc
-CFLAGS=-g
-TARGET:test.exe
+# Compiler and flags
+CC = gcc
+CFLAGS = -g
 
-OBJS=gluethread/glthread.o \
-		  graph.o 		   \
-		  topologies.o
+# Directories
+OBJDIR = obj
+SRCDIR = .
+BINDIR = .
 
-test.exe:testapp.o ${OBJS}
-	${CC} ${CFLAGS} testapp.o ${OBJS} -o test.exe
+# Target and objects
+TARGET = test.exe
+OBJS = $(OBJDIR)/gluethread/glthread.o \
+       $(OBJDIR)/graph.o \
+       $(OBJDIR)/topologies.o \
+       $(OBJDIR)/testapp.o
 
-testapp.o:testapp.c
-	${CC} ${CFLAGS} -c testapp.c -o testapp.o
+# Create object directories if they don't exist
+$(shell mkdir -p $(OBJDIR)/gluethread)
 
-gluethread/glthread.o:gluethread/glthread.c
-	${CC} ${CFLAGS} -c -I gluethread gluethread/glthread.c -o gluethread/glthread.o
-graph.o:graph.c
-	${CC} ${CFLAGS} -c -I . graph.c -o graph.o
-topologies.o:topologies.c
-	${CC} ${CFLAGS} -c -I . topologies.c -o topologies.o
+# Pattern rule for object files
+$(OBJDIR)/%.o: %.c
+	$(CC) $(CFLAGS) -I. -Igluethread -c $< -o $@
 
+# Pattern rule for gluethread objects
+$(OBJDIR)/gluethread/%.o: gluethread/%.c
+	$(CC) $(CFLAGS) -I. -Igluethread -c $< -o $@
+
+# Final target
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET)
+	echo '#!/bin/sh' > run.sh
+	echo '/lib64/ld-linux-x86-64.so.2 ./test.exe "$$@"' >> run.sh
+	chmod +x run.sh
+
+# Clean up object files and executables
+.PHONY: clean
 clean:
-	rm *.o
-	rm gluethread/glthread.o
-	rm *exe
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/gluethread/*.o $(TARGET)
+	rm -rf $(OBJDIR)
+
+# Build all target
+.PHONY: all
+all: $(TARGET)
